@@ -23,5 +23,5 @@
         android:layout_below="@id/text_view"
         android:smoothScrollbar="false"
         android:stackFromBottom="false"
-        android:gravity="fill" />
+        android:gravity="center" />
 </RelativeLayout>

@@ -6,12 +6,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +41,17 @@ public class MainActivity extends Activity {
 //    };
 
     // 9 Photos, 3 Ann Arbor, 3 New York, 3 Seattle
+    private Integer[] defaultImages = {
+        R.drawable.ann_arbor_1,
+        R.drawable.seattle_2,
+        R.drawable.ann_arbor_3,
+        R.drawable.new_york_1,
+        R.drawable.ann_arbor_2,
+        R.drawable.new_york_2,
+        R.drawable.seattle_1,
+        R.drawable.new_york_3,
+        R.drawable.seattle_3
+    };
 
     private Image[] images = {
             new Image("Ann Arbor", R.drawable.ann_arbor_1),
@@ -114,6 +129,26 @@ public class MainActivity extends Activity {
                 (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(new ComponentName(this, MainActivity.class)));
+        final Context c = this;
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (TextUtils.isEmpty(newText)) {
+                    GridView gridView = (GridView) findViewById(R.id.gridview);
+                    gridView.setAdapter(new ImageAdapter(c, defaultImages));
+                } else if (newText.equals("popup")) {
+                    ImageView imageView = new ImageView(c);
+                    imageView.setImageResource(R.drawable.ann_arbor_1);
+                    PopupWindow popupWindow = new PopupWindow(imageView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                }
+                return false;
+            }
+        });
 
         return true;
     }

@@ -92,7 +92,7 @@ public class MainActivity extends Activity {
             t.setText("Searching for \"" + query + "\"");
 
             GridView gridview = (GridView) findViewById(R.id.gridview);
-            ArrayList<Integer> results = new ArrayList<Integer>();
+            ArrayList<Integer> results = new ArrayList<>();
             for (Image i: images) {
                 if (i.location.toLowerCase().contains(query.toLowerCase())) {
                     results.add(i.id);

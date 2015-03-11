@@ -94,7 +94,8 @@ public class MainActivity extends Activity {
                     results.add(i.id);
                 }
             }
-            gridview.setAdapter(new ImageAdapter(this, mThumbIds));
+            gridview.setAdapter(new ImageAdapter(this, results.toArray(new Integer[results.size()])));
+            gridview.invalidateViews();
         }
     }
 

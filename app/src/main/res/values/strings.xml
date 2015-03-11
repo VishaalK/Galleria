@@ -2,6 +2,6 @@
     <string name="app_name">Galleria</string>
     <string name="search">Search</string>
     <string name="search_hint">Search Hint</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="photos">Photos</string>
     <string name="action_settings">Settings</string>
 </resources>

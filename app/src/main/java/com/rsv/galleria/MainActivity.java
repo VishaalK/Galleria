@@ -46,11 +46,18 @@ public class MainActivity extends Activity {
         R.drawable.seattle_2,
         R.drawable.ann_arbor_3,
         R.drawable.new_york_1,
+        R.drawable.sample_1,
         R.drawable.ann_arbor_2,
         R.drawable.new_york_2,
         R.drawable.seattle_1,
+        R.drawable.sample_0,
         R.drawable.new_york_3,
-        R.drawable.seattle_3
+        R.drawable.new_york_5,
+        R.drawable.new_york_6,
+        R.drawable.seattle_3,
+        R.drawable.new_york_4,
+        R.drawable.aussie_1,
+        R.drawable.aussie_2
     };
 
     private Image[] images = {
@@ -58,11 +65,18 @@ public class MainActivity extends Activity {
             new Image("Seattle", R.drawable.seattle_2),
             new Image("Ann Arbor", R.drawable.ann_arbor_3),
             new Image("New York", R.drawable.new_york_1),
+            new Image("New York", R.drawable.sample_1),
             new Image("Ann Arbor", R.drawable.ann_arbor_2),
             new Image("New York", R.drawable.new_york_2),
             new Image("Seattle", R.drawable.seattle_1),
+            new Image("New York", R.drawable.sample_0),
             new Image("New York", R.drawable.new_york_3),
+            new Image("New York", R.drawable.new_york_5),
+            new Image("New York", R.drawable.new_york_6),
             new Image("Seattle", R.drawable.seattle_3),
+            new Image("New York", R.drawable.new_york_4),
+            new Image("Australia", R.drawable.aussie_1),
+            new Image("Australia", R.drawable.aussie_2)
     };
 
     @Override

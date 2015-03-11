@@ -5,9 +5,12 @@ import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -79,6 +82,8 @@ public class MainActivity extends Activity {
             new Image("Australia", R.drawable.aussie_2)
     };
 
+    private Integer[] cachedResults = defaultImages;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,8 +100,29 @@ public class MainActivity extends Activity {
         gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            private PopupWindow cachedWindow = new PopupWindow();
+
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+//                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                View layout = inflater.inflate(R.lay)
+//                if (cachedWindow.isShowing()) {
+//                    cachedWindow.dismiss();
+//                }
+//                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                View layout = inflater.inflate(R.layout.layout_popup, (ViewGroup) findViewById(R.id.popup_element));
+//
+////                ImageView imageView = new ImageView(MainActivity.this);
+////                imageView.setImageResource(cachedResults[position]);
+//                PopupWindow pw = new PopupWindow(layout, 640, 640);
+//                ImageView imageView = (ImageView)findViewById(R.id.imageView);
+//                imageView.setImageResource(cachedResults[position]);
+////                View parentView = findViewById(R.id.parent_view);
+//                pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
+//                pw.setBackgroundDrawable(new BitmapDrawable(getResources(), ""));
+//                pw.setOutsideTouchable(true);
+////                pw.setFocusable(true);
+//                cachedWindow = pw;
             }
         });
 
@@ -127,6 +153,8 @@ public class MainActivity extends Activity {
                     results.add(i.id);
                 }
             }
+            cachedResults = new Integer[results.size()];
+            System.arraycopy(results.toArray(new Integer[0]), 0, cachedResults, 0, results.size());
             gridview.setAdapter(new ImageAdapter(this, results.toArray(new Integer[results.size()])));
             gridview.invalidateViews();
         }
@@ -155,11 +183,12 @@ public class MainActivity extends Activity {
                 if (TextUtils.isEmpty(newText)) {
                     GridView gridView = (GridView) findViewById(R.id.gridview);
                     gridView.setAdapter(new ImageAdapter(c, defaultImages));
-                } else if (newText.equals("popup")) {
-                    ImageView imageView = new ImageView(c);
-                    imageView.setImageResource(R.drawable.ann_arbor_1);
-                    PopupWindow popupWindow = new PopupWindow(imageView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 }
+// else if (newText.equals("popup")) {
+//                    ImageView imageView = new ImageView(c);
+//                    imageView.setImageResource(R.drawable.ann_arbor_1);
+//                    PopupWindow popupWindow = new PopupWindow(imageView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//                }
                 return false;
             }
         });

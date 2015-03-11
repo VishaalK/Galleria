@@ -22,32 +22,32 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
 
     // references to our images
-    private Integer[] mThumbIds = {
-            R.drawable.sample_2, R.drawable.sample_3,
-            R.drawable.sample_4, R.drawable.sample_5,
-            R.drawable.sample_6, R.drawable.sample_7,
-            R.drawable.sample_0, R.drawable.sample_1,
-            R.drawable.sample_2, R.drawable.sample_3,
-            R.drawable.sample_4, R.drawable.sample_5,
-            R.drawable.sample_6, R.drawable.sample_7,
-            R.drawable.sample_0, R.drawable.sample_1,
-            R.drawable.sample_2, R.drawable.sample_3,
-            R.drawable.sample_4, R.drawable.sample_5,
-            R.drawable.sample_6, R.drawable.sample_7
-    };
+//    private Integer[] mThumbIds = {
+//            R.drawable.sample_2, R.drawable.sample_3,
+//            R.drawable.sample_4, R.drawable.sample_5,
+//            R.drawable.sample_6, R.drawable.sample_7,
+//            R.drawable.sample_0, R.drawable.sample_1,
+//            R.drawable.sample_2, R.drawable.sample_3,
+//            R.drawable.sample_4, R.drawable.sample_5,
+//            R.drawable.sample_6, R.drawable.sample_7,
+//            R.drawable.sample_0, R.drawable.sample_1,
+//            R.drawable.sample_2, R.drawable.sample_3,
+//            R.drawable.sample_4, R.drawable.sample_5,
+//            R.drawable.sample_6, R.drawable.sample_7
+//    };
 
     // 9 Photos, 3 Ann Arbor, 3 New York, 3 Seattle
 
     private Image[] images = {
-            new Image("Ann Arbor", R.drawable.sample_0),
-            new Image("Ann Arbor", R.drawable.sample_1),
-            new Image("Ann Arbor", R.drawable.sample_2),
-            new Image("New York", R.drawable.sample_3),
-            new Image("New York", R.drawable.sample_4),
-            new Image("New York", R.drawable.sample_5),
-            new Image("Seattle", R.drawable.sample_6),
-            new Image("Seattle", R.drawable.sample_7),
-            new Image("Seattle", R.drawable.sample_7),
+            new Image("Ann Arbor", R.drawable.ann_arbor_1),
+            new Image("Seattle", R.drawable.seattle_2),
+            new Image("Ann Arbor", R.drawable.ann_arbor_3),
+            new Image("New York", R.drawable.new_york_1),
+            new Image("Ann Arbor", R.drawable.ann_arbor_2),
+            new Image("New York", R.drawable.new_york_2),
+            new Image("Seattle", R.drawable.seattle_1),
+            new Image("New York", R.drawable.new_york_3),
+            new Image("Seattle", R.drawable.seattle_3),
     };
 
     @Override
@@ -59,7 +59,11 @@ public class MainActivity extends Activity {
         handleIntent(getIntent());
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
-        gridview.setAdapter(new ImageAdapter(this, mThumbIds));
+        ArrayList<Integer> initialImages = new ArrayList<>();
+        for (Image i: images) {
+            initialImages.add(i.id);
+        }
+        gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -85,12 +89,12 @@ public class MainActivity extends Activity {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
             TextView t = (TextView)findViewById(R.id.text_view);
-            t.setText("Searching for " + query);
+            t.setText("Searching for \"" + query + "\"");
 
             GridView gridview = (GridView) findViewById(R.id.gridview);
             ArrayList<Integer> results = new ArrayList<Integer>();
             for (Image i: images) {
-                if (i.location.contains(query)) {
+                if (i.location.toLowerCase().contains(query.toLowerCase())) {
                     results.add(i.id);
                 }
             }

@@ -9,18 +9,19 @@
         android:text="@string/hello_world"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
         />
 
     <GridView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/gridview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:columnWidth="60dp"
-        android:numColumns="auto_fit"
+        android:numColumns="3"
         android:verticalSpacing="0dp"
-        android:horizontalSpacing="0dp"
+        android:horizontalSpacing="2dp"
         android:stretchMode="columnWidth"
-        android:gravity="center"
         android:layout_below="@id/text_view"
-        />
+        android:smoothScrollbar="false"
+        android:stackFromBottom="false"
+        android:gravity="fill" />
 </RelativeLayout>

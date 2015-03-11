@@ -16,6 +16,8 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
 
@@ -84,6 +86,15 @@ public class MainActivity extends Activity {
             String query = intent.getStringExtra(SearchManager.QUERY);
             TextView t = (TextView)findViewById(R.id.text_view);
             t.setText("Searching for " + query);
+
+            GridView gridview = (GridView) findViewById(R.id.gridview);
+            ArrayList<Integer> results = new ArrayList<Integer>();
+            for (Image i: images) {
+                if (i.location.contains(query)) {
+                    results.add(i.id);
+                }
+            }
+            gridview.setAdapter(new ImageAdapter(this, mThumbIds));
         }
     }
 

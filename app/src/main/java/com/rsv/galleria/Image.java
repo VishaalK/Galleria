@@ -5,10 +5,12 @@ package com.rsv.galleria;
  */
 public class Image {
     String location;
+    String date;
     Integer id;
 
-    public Image(String location, Integer id) {
+    public Image(String location, String date, Integer id) {
         this.location = location;
+        this.date = date;
         this.id = id;
     }
 }

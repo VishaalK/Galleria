@@ -64,22 +64,22 @@ public class MainActivity extends Activity {
     };
 
     private Image[] images = {
-            new Image("Ann Arbor", R.drawable.ann_arbor_1),
-            new Image("Seattle", R.drawable.seattle_2),
-            new Image("Ann Arbor", R.drawable.ann_arbor_3),
-            new Image("New York", R.drawable.new_york_1),
-            new Image("New York", R.drawable.sample_1),
-            new Image("Ann Arbor", R.drawable.ann_arbor_2),
-            new Image("New York", R.drawable.new_york_2),
-            new Image("Seattle", R.drawable.seattle_1),
-            new Image("New York", R.drawable.sample_0),
-            new Image("New York", R.drawable.new_york_3),
-            new Image("New York", R.drawable.new_york_5),
-            new Image("New York", R.drawable.new_york_6),
-            new Image("Seattle", R.drawable.seattle_3),
-            new Image("New York", R.drawable.new_york_4),
-            new Image("Australia", R.drawable.aussie_1),
-            new Image("Australia", R.drawable.aussie_2)
+            new Image("Ann Arbor", "April 5 2015", R.drawable.ann_arbor_1),
+            new Image("Seattle", "April 5 2015", R.drawable.seattle_2),
+            new Image("Ann Arbor", "April 6 2015", R.drawable.ann_arbor_3),
+            new Image("New York", "April 6 2015", R.drawable.new_york_1),
+            new Image("New York", "May 5 2015", R.drawable.sample_1),
+            new Image("Ann Arbor", "May 5 2014", R.drawable.ann_arbor_2),
+            new Image("New York", "May 5 2015", R.drawable.new_york_2),
+            new Image("Seattle", "", R.drawable.seattle_1),
+            new Image("New York", "", R.drawable.sample_0),
+            new Image("New York", "", R.drawable.new_york_3),
+            new Image("New York", "", R.drawable.new_york_5),
+            new Image("New York", "", R.drawable.new_york_6),
+            new Image("Seattle", "", R.drawable.seattle_3),
+            new Image("New York", "", R.drawable.new_york_4),
+            new Image("Australia", "", R.drawable.aussie_1),
+            new Image("Australia", "", R.drawable.aussie_2)
     };
 
     private Integer[] cachedResults = defaultImages;
@@ -149,7 +149,8 @@ public class MainActivity extends Activity {
             GridView gridview = (GridView) findViewById(R.id.gridview);
             ArrayList<Integer> results = new ArrayList<>();
             for (Image i: images) {
-                if (i.location.toLowerCase().contains(query.toLowerCase())) {
+                if (i.location.toLowerCase().contains(query.toLowerCase()) ||
+                        i.date.toLowerCase().contains(query.toLowerCase())) {
                     results.add(i.id);
                 }
             }

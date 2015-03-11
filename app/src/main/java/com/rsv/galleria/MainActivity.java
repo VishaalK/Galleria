@@ -9,12 +9,44 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.SearchView;
 import android.widget.TextView;
-
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
+
+    // references to our images
+    private Integer[] mThumbIds = {
+            R.drawable.sample_2, R.drawable.sample_3,
+            R.drawable.sample_4, R.drawable.sample_5,
+            R.drawable.sample_6, R.drawable.sample_7,
+            R.drawable.sample_0, R.drawable.sample_1,
+            R.drawable.sample_2, R.drawable.sample_3,
+            R.drawable.sample_4, R.drawable.sample_5,
+            R.drawable.sample_6, R.drawable.sample_7,
+            R.drawable.sample_0, R.drawable.sample_1,
+            R.drawable.sample_2, R.drawable.sample_3,
+            R.drawable.sample_4, R.drawable.sample_5,
+            R.drawable.sample_6, R.drawable.sample_7
+    };
+
+    // 9 Photos, 3 Ann Arbor, 3 New York, 3 Seattle
+
+    private Image[] images = {
+            new Image("Ann Arbor", R.drawable.sample_0),
+            new Image("Ann Arbor", R.drawable.sample_1),
+            new Image("Ann Arbor", R.drawable.sample_2),
+            new Image("New York", R.drawable.sample_3),
+            new Image("New York", R.drawable.sample_4),
+            new Image("New York", R.drawable.sample_5),
+            new Image("Seattle", R.drawable.sample_6),
+            new Image("Seattle", R.drawable.sample_7),
+            new Image("Seattle", R.drawable.sample_7),
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +55,15 @@ public class MainActivity extends Activity {
 
         Log.v(TAG, "MainActivity created");
         handleIntent(getIntent());
+
+        GridView gridview = (GridView) findViewById(R.id.gridview);
+        gridview.setAdapter(new ImageAdapter(this, mThumbIds));
+
+        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+            }
+        });
 
 //        Intent intent = getIntent();
 //        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -42,7 +83,7 @@ public class MainActivity extends Activity {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
             TextView t = (TextView)findViewById(R.id.text_view);
-            t.setText(query);
+            t.setText("Searching for " + query);
         }
     }
 

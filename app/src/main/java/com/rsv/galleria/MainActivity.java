@@ -11,11 +11,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -80,9 +77,12 @@ public class MainActivity extends Activity {
         }
         gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
 
+        final Context c = this;
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+
+                //PopupWindow popupWindow = new PopupWindow(v, 320, 320);
             }
         });
 
@@ -98,6 +98,20 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
+    }
+
+    private Integer[] executeSearch(String query) {
+        TextView t = (TextView)findViewById(R.id.text_view);
+        t.setText("Searching for \"" + query + "\"");
+
+//        GridView gridView = (GridView) findViewById(R.id.gridview);
+        ArrayList<Integer> results = new ArrayList<>();
+        for (Image i: images) {
+            if (i.location.toLowerCase().contains(query.toLowerCase())) {
+                results.add(i.id);
+            }
+        }
+        return results.toArray(new Integer[results.size()]);
     }
 
     private void handleIntent(Intent intent) {
@@ -141,10 +155,6 @@ public class MainActivity extends Activity {
                 if (TextUtils.isEmpty(newText)) {
                     GridView gridView = (GridView) findViewById(R.id.gridview);
                     gridView.setAdapter(new ImageAdapter(c, defaultImages));
-                } else if (newText.equals("popup")) {
-                    ImageView imageView = new ImageView(c);
-                    imageView.setImageResource(R.drawable.ann_arbor_1);
-                    PopupWindow popupWindow = new PopupWindow(imageView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 }
                 return false;
             }

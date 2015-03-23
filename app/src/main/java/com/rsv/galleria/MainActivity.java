@@ -5,9 +5,12 @@ import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,24 +46,40 @@ public class MainActivity extends Activity {
         R.drawable.seattle_2,
         R.drawable.ann_arbor_3,
         R.drawable.new_york_1,
+        R.drawable.sample_1,
         R.drawable.ann_arbor_2,
         R.drawable.new_york_2,
         R.drawable.seattle_1,
+        R.drawable.sample_0,
         R.drawable.new_york_3,
-        R.drawable.seattle_3
+        R.drawable.new_york_5,
+        R.drawable.new_york_6,
+        R.drawable.seattle_3,
+        R.drawable.new_york_4,
+        R.drawable.aussie_1,
+        R.drawable.aussie_2
     };
 
     private Image[] images = {
-            new Image("Ann Arbor", R.drawable.ann_arbor_1),
-            new Image("Seattle", R.drawable.seattle_2),
-            new Image("Ann Arbor", R.drawable.ann_arbor_3),
-            new Image("New York", R.drawable.new_york_1),
-            new Image("Ann Arbor", R.drawable.ann_arbor_2),
-            new Image("New York", R.drawable.new_york_2),
-            new Image("Seattle", R.drawable.seattle_1),
-            new Image("New York", R.drawable.new_york_3),
-            new Image("Seattle", R.drawable.seattle_3),
+            new Image("Ann Arbor", "April 5 2015", R.drawable.ann_arbor_1),
+            new Image("Seattle", "April 5 2015", R.drawable.seattle_2),
+            new Image("Ann Arbor", "April 6 2015", R.drawable.ann_arbor_3),
+            new Image("New York", "April 6 2015", R.drawable.new_york_1),
+            new Image("New York", "May 5 2015", R.drawable.sample_1),
+            new Image("Ann Arbor", "May 5 2014", R.drawable.ann_arbor_2),
+            new Image("New York", "May 5 2015", R.drawable.new_york_2),
+            new Image("Seattle", "", R.drawable.seattle_1),
+            new Image("New York", "", R.drawable.sample_0),
+            new Image("New York", "", R.drawable.new_york_3),
+            new Image("New York", "", R.drawable.new_york_5),
+            new Image("New York", "", R.drawable.new_york_6),
+            new Image("Seattle", "", R.drawable.seattle_3),
+            new Image("New York", "", R.drawable.new_york_4),
+            new Image("Australia", "", R.drawable.aussie_1),
+            new Image("Australia", "", R.drawable.aussie_2)
     };
+
+    private Integer[] cachedResults = defaultImages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,10 +98,31 @@ public class MainActivity extends Activity {
 
         final Context c = this;
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            private PopupWindow cachedWindow = new PopupWindow();
+
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
 
                 //PopupWindow popupWindow = new PopupWindow(v, 320, 320);
+//                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                View layout = inflater.inflate(R.lay)
+//                if (cachedWindow.isShowing()) {
+//                    cachedWindow.dismiss();
+//                }
+//                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                View layout = inflater.inflate(R.layout.layout_popup, (ViewGroup) findViewById(R.id.popup_element));
+//
+////                ImageView imageView = new ImageView(MainActivity.this);
+////                imageView.setImageResource(cachedResults[position]);
+//                PopupWindow pw = new PopupWindow(layout, 640, 640);
+//                ImageView imageView = (ImageView)findViewById(R.id.imageView);
+//                imageView.setImageResource(cachedResults[position]);
+////                View parentView = findViewById(R.id.parent_view);
+//                pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
+//                pw.setBackgroundDrawable(new BitmapDrawable(getResources(), ""));
+//                pw.setOutsideTouchable(true);
+////                pw.setFocusable(true);
+//                cachedWindow = pw;
             }
         });
 
@@ -123,10 +163,13 @@ public class MainActivity extends Activity {
             GridView gridview = (GridView) findViewById(R.id.gridview);
             ArrayList<Integer> results = new ArrayList<>();
             for (Image i: images) {
-                if (i.location.toLowerCase().contains(query.toLowerCase())) {
+                if (i.location.toLowerCase().contains(query.toLowerCase()) ||
+                        i.date.toLowerCase().contains(query.toLowerCase())) {
                     results.add(i.id);
                 }
             }
+            cachedResults = new Integer[results.size()];
+            System.arraycopy(results.toArray(new Integer[0]), 0, cachedResults, 0, results.size());
             gridview.setAdapter(new ImageAdapter(this, results.toArray(new Integer[results.size()])));
             gridview.invalidateViews();
         }
@@ -156,6 +199,11 @@ public class MainActivity extends Activity {
                     GridView gridView = (GridView) findViewById(R.id.gridview);
                     gridView.setAdapter(new ImageAdapter(c, defaultImages));
                 }
+// else if (newText.equals("popup")) {
+//                    ImageView imageView = new ImageView(c);
+//                    imageView.setImageResource(R.drawable.ann_arbor_1);
+//                    PopupWindow popupWindow = new PopupWindow(imageView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//                }
                 return false;
             }
         });

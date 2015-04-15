@@ -6,7 +6,11 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -24,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -38,6 +43,11 @@ public class MainActivity extends Activity {
 
     private static Integer[] cachedIds = new Integer[numViews];
 
+    private static PackageInfo packageInfo;
+
+    private List<PackageInfo> packageList;
+
+    private PackageInfo curResultPackage;
     // 9 Photos, 3 Ann Arbor, 3 New York, 3 Seattle
     private Integer[] defaultImages = {
         R.drawable.ann_arbor_1,
@@ -78,6 +88,11 @@ public class MainActivity extends Activity {
     };
 
     private Integer[] cachedResults = defaultImages;
+
+    private boolean isSystemPackage(PackageInfo pkgInfo) {
+        return ((pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) ? true
+                : false;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +135,29 @@ public class MainActivity extends Activity {
             }
         });
 
+        tv = (TextView) findViewById(R.id.app_1);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PackageInfo pi = curResultPackage;
+                Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
+                Log.v(TAG, pi.packageName);
+
+                Log.v(TAG, "2 pkgName: " + pi.applicationInfo.packageName);
+                Log.v(TAG, "2 name: " + pi.applicationInfo.name);
+//                ComponentName name = new ComponentName(pi.packageName, pi.name);
+//                Intent i = new Intent(Intent.ACTION_MAIN);
+//                i.addCategory(Intent.CATEGORY_LAUNCHER);
+//                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+//                i.setComponent(name);
+////                Log.v(TAG, "PackageName: " + activity.packageName);
+////                Log.v(TAG, "Name: " + activity.name);
+                Intent i = getPackageManager().getLaunchIntentForPackage(pi.packageName);
+                startActivity(i);
+            }
+        });
+
+
 //        ContentResolver cr = getContentResolver();
 //        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 //        if (cur.getCount() > 0) {
@@ -135,6 +173,25 @@ public class MainActivity extends Activity {
 //                }
 //            }
 //        }
+
+        PackageManager packageManager = getPackageManager();
+        packageList = packageManager
+                .getInstalledPackages(PackageManager.GET_PERMISSIONS);
+
+//        packageList1 = new ArrayList<PackageInfo>();
+
+//        /*To filter out System apps*/
+//        for (PackageInfo pi : packageList) {
+//            boolean b = isSystemPackage(pi);
+//            if (!b) {
+//                packageList1.add(pi);
+//            }
+//        }
+
+        for (PackageInfo pi : packageList) {
+            Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
+            Log.v(TAG, pi.packageName);
+        }
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
         ArrayList<Integer> initialImages = new ArrayList<>();
@@ -184,6 +241,28 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
+    }
+
+    private List<PackageInfo> searchPackages(String query, List<PackageInfo> packages) {
+        List<PackageInfo> results = new ArrayList<PackageInfo>();
+        int currentMin = Integer.MAX_VALUE;
+        for (PackageInfo pi : packages) {
+//            int found = getPackageManager().getApplicationLabel(pi.applicationInfo).toString().toLowerCase()
+//                    .indexOf(query.toLowerCase());
+//            if (found != -1 && found < currentMin) {
+//                currentMin = found;
+//                if (getPackageManager().getLaunchIntentForPackage(pi.packageName) != null) {
+//                    results.add(pi);
+//                }
+//            }
+            if (getPackageManager().getApplicationLabel(pi.applicationInfo).toString().toLowerCase().
+                    contains(query.toLowerCase())) {
+                if (getPackageManager().getLaunchIntentForPackage(pi.packageName) != null) {
+                    results.add(pi);
+                }
+            }
+        }
+        return results;
     }
 
     private Integer[] executeSearch(String query) {
@@ -261,7 +340,6 @@ public class MainActivity extends Activity {
             cursor.moveToNext();
 
 
-
             for (int i = 0; i < numContacts; i++) {
                 Integer id = contactViewIds[i];
                 TextView tv = (TextView) findViewById(id);
@@ -281,6 +359,24 @@ public class MainActivity extends Activity {
             for (int i = numContacts; i < numViews; i++) {
                 TextView tv = (TextView) findViewById(contactViewIds[i]);
                 tv.setVisibility(View.GONE);
+            }
+
+            /* UPDATE THE TEXT VIEW OF PACKAGES */
+            List<PackageInfo> packageResults = searchPackages(query, packageList);
+            TextView packageView = (TextView) findViewById(R.id.app_1);
+            if (packageResults.size() == 0) {
+                packageView.setVisibility(View.GONE);
+            } else {
+                packageView.setVisibility(View.VISIBLE);
+//                PackageInfo pi = packageResults.get(packageResults.size() - 1);
+                PackageInfo pi = packageResults.get(0);
+                curResultPackage = pi;
+                String appLabel = getPackageManager().getApplicationLabel(pi.applicationInfo).toString();
+                packageView.setText(appLabel);
+                Drawable appIcon = getPackageManager().getApplicationIcon(pi.applicationInfo);
+                appIcon.setBounds(0, 0, 40, 40);
+                packageView.setCompoundDrawables(appIcon, null, null, null);
+                packageView.setCompoundDrawablePadding(15);
             }
 
             //TODO: put the IDs of the views in an array, iterate through the ones
@@ -317,8 +413,12 @@ public class MainActivity extends Activity {
                         TextView tv = (TextView) findViewById(contactViewIds[i]);
                         tv.setVisibility(View.GONE);
                     }
+
+                    TextView tv = (TextView) findViewById(R.id.app_1);
+                    tv.setVisibility(View.GONE);
+//                    tv = (TextView) findViewById(R.id.apps_label);
                 }
-// else if (newText.equals("popup")) {
+//                else if (newText.equals("popup")) {
 //                    ImageView imageView = new ImageView(c);
 //                    imageView.setImageResource(R.drawable.ann_arbor_1);
 //                    PopupWindow popupWindow = new PopupWindow(imageView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

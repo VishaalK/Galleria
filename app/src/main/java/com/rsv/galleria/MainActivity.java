@@ -104,11 +104,14 @@ public class MainActivity extends Activity {
         }
         gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
 
+        final Context c = this;
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             private PopupWindow cachedWindow = new PopupWindow();
 
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+
+                //PopupWindow popupWindow = new PopupWindow(v, 320, 320);
 //                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 //                View layout = inflater.inflate(R.lay)
 //                if (cachedWindow.isShowing()) {
@@ -154,6 +157,18 @@ public class MainActivity extends Activity {
             }
         }
         return (Integer[])results.toArray();
+
+//        TextView t = (TextView)findViewById(R.id.text_view);
+//        t.setText("Searching for \"" + query + "\"");
+
+////        GridView gridView = (GridView) findViewById(R.id.gridview);
+//        ArrayList<Integer> results = new ArrayList<>();
+//        for (Image i: images) {
+//            if (i.location.toLowerCase().contains(query.toLowerCase())) {
+//                results.add(i.id);
+//            }
+//        }
+//        return results.toArray(new Integer[results.size()]);
     }
 
     private void handleIntent(Intent intent) {

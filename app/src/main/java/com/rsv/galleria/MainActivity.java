@@ -3,21 +3,21 @@ package com.rsv.galleria;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -28,20 +28,9 @@ import java.util.ArrayList;
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
 
-    // references to our images
-//    private Integer[] mThumbIds = {
-//            R.drawable.sample_2, R.drawable.sample_3,
-//            R.drawable.sample_4, R.drawable.sample_5,
-//            R.drawable.sample_6, R.drawable.sample_7,
-//            R.drawable.sample_0, R.drawable.sample_1,
-//            R.drawable.sample_2, R.drawable.sample_3,
-//            R.drawable.sample_4, R.drawable.sample_5,
-//            R.drawable.sample_6, R.drawable.sample_7,
-//            R.drawable.sample_0, R.drawable.sample_1,
-//            R.drawable.sample_2, R.drawable.sample_3,
-//            R.drawable.sample_4, R.drawable.sample_5,
-//            R.drawable.sample_6, R.drawable.sample_7
-//    };
+    final Uri sourceUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+    private static final Integer numViews = 3;
 
     // 9 Photos, 3 Ann Arbor, 3 New York, 3 Seattle
     private Integer[] defaultImages = {
@@ -92,6 +81,22 @@ public class MainActivity extends Activity {
         Log.v(TAG, "MainActivity created");
         handleIntent(getIntent());
 
+//        ContentResolver cr = getContentResolver();
+//        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+//        if (cur.getCount() > 0) {
+//            while (cur.moveToNext()) {
+//                String id = cur.getString(
+//                        cur.getColumnIndex(ContactsContract.Contacts._ID));
+//                String name = cur.getString(
+//                        cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+//                Log.v(TAG, "Contact found: " + name + " with id " + id);
+//                if (Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+//                    //Query phone here.  Covered next
+//                    Log.v(TAG, " and they have a phone number!");
+//                }
+//            }
+//        }
+
         GridView gridview = (GridView) findViewById(R.id.gridview);
         ArrayList<Integer> initialImages = new ArrayList<>();
         for (Image i: images) {
@@ -140,12 +145,25 @@ public class MainActivity extends Activity {
         handleIntent(intent);
     }
 
+    private Integer[] executeSearch(String query) {
+        ArrayList<Integer> results = new ArrayList<>();
+        for (Image i: images) {
+            if (i.location.toLowerCase().contains(query.toLowerCase()) ||
+                    i.date.toLowerCase().contains(query.toLowerCase())) {
+                results.add(i.id);
+            }
+        }
+        return (Integer[])results.toArray();
+    }
+
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            // Get search string and set query
             String query = intent.getStringExtra(SearchManager.QUERY);
             TextView t = (TextView)findViewById(R.id.text_view);
             t.setText("Searching for \"" + query + "\"");
 
+            /* UPDATE THE GRID VIEW */
             GridView gridview = (GridView) findViewById(R.id.gridview);
             ArrayList<Integer> results = new ArrayList<>();
             for (Image i: images) {
@@ -158,6 +176,45 @@ public class MainActivity extends Activity {
             System.arraycopy(results.toArray(new Integer[0]), 0, cachedResults, 0, results.size());
             gridview.setAdapter(new ImageAdapter(this, results.toArray(new Integer[results.size()])));
             gridview.invalidateViews();
+
+            /* UPDATE THE LIST VIEW */
+            Log.v(TAG, "Second clause");
+            String whereClause = ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?";
+            String queryLike = "%" + query + "%";
+            ContentResolver cr = getContentResolver();
+            Cursor cursor = cr.query(
+                    ContactsContract.Contacts.CONTENT_URI,
+                    null,
+                    whereClause,
+                    new String[] { queryLike },
+                    null);
+
+            int numRows = cursor.getCount();
+            int numContacts = (numRows < numViews) ? numRows : numViews;
+            if (cursor.getCount() > 0) {
+                while (cursor.moveToNext()) {
+                    String id = cursor.getString(
+                            cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                    String name = cursor.getString(
+                            cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                    Log.v(TAG, "Contact found: " + name + " with id " + id);
+                    if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                        //Query phone here.  Covered next
+                        Log.v(TAG, " and they have a phone number!");
+                    }
+                }
+            }
+
+            Integer[] contactViewIds = { R.id.contact_1, R.id.contact_2, R.id.contact_3 };
+            for (int i = 0; i < numContacts; i++) {
+                Integer id = contactViewIds[i];
+                TextView tv = (TextView) findViewById(id);
+            }
+            for (int i = numContacts; i < numViews; i++) {
+
+            }
+            //TODO: put the IDs of the views in an array, iterate through the ones
+            //
         }
     }
 
@@ -173,6 +230,7 @@ public class MainActivity extends Activity {
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(new ComponentName(this, MainActivity.class)));
         final Context c = this;
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

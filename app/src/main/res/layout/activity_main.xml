@@ -13,17 +13,41 @@
         android:paddingBottom="5dp"
         />
 
+    <TextView android:id="@+id/contact_1"
+        android:text="@string/contact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_below="@id/text_view"
+        />
+
+    <TextView android:id="@+id/contact_2"
+        android:text="@string/contact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_below="@id/contact_1"
+        />
+
+    <TextView android:id="@+id/contact_3"
+        android:text="@string/contact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_below="@id/contact_2"
+        />
 
     <GridView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/gridview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:numColumns="3"
-        android:verticalSpacing="2dp"
-        android:horizontalSpacing="2dp"
+        android:verticalSpacing="0dp"
+        android:horizontalSpacing="0dp"
         android:stretchMode="columnWidth"
-        android:layout_below="@id/text_view"
+        android:layout_below="@id/contact_3"
         android:smoothScrollbar="false"
         android:stackFromBottom="false"
         android:gravity="center" />
+
 </RelativeLayout>

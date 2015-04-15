@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -39,9 +40,15 @@ public class MainActivity extends Activity {
 
     private static final Integer[] contactViewIds = { R.id.contact_1, R.id.contact_2, R.id.contact_3 };
 
+    private static final Integer[] musicViewIds = { R.id.music_1, R.id.music_2, R.id.music_3 };
+
     private final Context c = this;
 
     private static Integer[] cachedIds = new Integer[numViews];
+
+    private static Integer[] cachedMusicIds = new Integer[numViews];
+
+    private static int buf = 0;
 
     private static PackageInfo packageInfo;
 
@@ -66,6 +73,11 @@ public class MainActivity extends Activity {
         R.drawable.new_york_4,
         R.drawable.aussie_1,
         R.drawable.aussie_2
+//        R.drawable.home1,
+//        R.drawable.home2,
+//        R.drawable.home3,
+//        R.drawable.home4,
+//        R.drawable.food1
     };
 
     private Image[] images = {
@@ -85,6 +97,10 @@ public class MainActivity extends Activity {
             new Image("New York", "", R.drawable.new_york_4),
             new Image("Australia", "", R.drawable.aussie_1),
             new Image("Australia", "", R.drawable.aussie_2)
+            /*new Image("Ann Arbor", "April 15 2015", R.drawable.home1),
+            new Image("Ann Arbor", "April 15 2015", R.drawable.home2),
+            new Image("Ann Arbor", "April 15 2015", R.drawable.home3),
+            new Image("Ann Arbor", "April 15 2015", R.drawable.home4)*/
     };
 
     private Integer[] cachedResults = defaultImages;
@@ -145,48 +161,49 @@ public class MainActivity extends Activity {
 
                 Log.v(TAG, "2 pkgName: " + pi.applicationInfo.packageName);
                 Log.v(TAG, "2 name: " + pi.applicationInfo.name);
-//                ComponentName name = new ComponentName(pi.packageName, pi.name);
-//                Intent i = new Intent(Intent.ACTION_MAIN);
-//                i.addCategory(Intent.CATEGORY_LAUNCHER);
-//                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-//                i.setComponent(name);
-////                Log.v(TAG, "PackageName: " + activity.packageName);
-////                Log.v(TAG, "Name: " + activity.name);
                 Intent i = getPackageManager().getLaunchIntentForPackage(pi.packageName);
                 startActivity(i);
             }
         });
 
+        tv = (TextView) findViewById(R.id.music_1);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, String.valueOf(cachedMusicIds[0]));
+                intent.setData(uri);
+                c.startActivity(intent);
+            }
+        });
 
-//        ContentResolver cr = getContentResolver();
-//        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-//        if (cur.getCount() > 0) {
-//            while (cur.moveToNext()) {
-//                String id = cur.getString(
-//                        cur.getColumnIndex(ContactsContract.Contacts._ID));
-//                String name = cur.getString(
-//                        cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-//                Log.v(TAG, "Contact found: " + name + " with id " + id);
-//                if (Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-//                    //Query phone here.  Covered next
-//                    Log.v(TAG, " and they have a phone number!");
-//                }
-//            }
-//        }
+        tv = (TextView) findViewById(R.id.music_2);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, String.valueOf(cachedMusicIds[1]));
+                intent.setData(uri);
+                c.startActivity(intent);
+            }
+        });
+
+        tv = (TextView) findViewById(R.id.music_3);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, String.valueOf(cachedMusicIds[2]));
+                intent.setData(uri);
+                c.startActivity(intent);
+            }
+        });
+
 
         PackageManager packageManager = getPackageManager();
         packageList = packageManager
                 .getInstalledPackages(PackageManager.GET_PERMISSIONS);
 
-//        packageList1 = new ArrayList<PackageInfo>();
-
-//        /*To filter out System apps*/
-//        for (PackageInfo pi : packageList) {
-//            boolean b = isSystemPackage(pi);
-//            if (!b) {
-//                packageList1.add(pi);
-//            }
-//        }
 
         for (PackageInfo pi : packageList) {
             Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
@@ -205,37 +222,9 @@ public class MainActivity extends Activity {
 
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
-
-                //PopupWindow popupWindow = new PopupWindow(v, 320, 320);
-//                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//                View layout = inflater.inflate(R.lay)
-//                if (cachedWindow.isShowing()) {
-//                    cachedWindow.dismiss();
-//                }
-//                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//                View layout = inflater.inflate(R.layout.layout_popup, (ViewGroup) findViewById(R.id.popup_element));
-//
-////                ImageView imageView = new ImageView(MainActivity.this);
-////                imageView.setImageResource(cachedResults[position]);
-//                PopupWindow pw = new PopupWindow(layout, 640, 640);
-//                ImageView imageView = (ImageView)findViewById(R.id.imageView);
-//                imageView.setImageResource(cachedResults[position]);
-////                View parentView = findViewById(R.id.parent_view);
-//                pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
-//                pw.setBackgroundDrawable(new BitmapDrawable(getResources(), ""));
-//                pw.setOutsideTouchable(true);
-////                pw.setFocusable(true);
-//                cachedWindow = pw;
             }
         });
 
-//        Intent intent = getIntent();
-//        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-//            String query = intent.getStringExtra(SearchManager.QUERY);
-//            Log.v(TAG, "query");
-//            TextView t = (TextView)findViewById(R.id.text_view);
-//            t.setText(query);
-//        }
     }
 
     @Override
@@ -247,14 +236,7 @@ public class MainActivity extends Activity {
         List<PackageInfo> results = new ArrayList<PackageInfo>();
         int currentMin = Integer.MAX_VALUE;
         for (PackageInfo pi : packages) {
-//            int found = getPackageManager().getApplicationLabel(pi.applicationInfo).toString().toLowerCase()
-//                    .indexOf(query.toLowerCase());
-//            if (found != -1 && found < currentMin) {
-//                currentMin = found;
-//                if (getPackageManager().getLaunchIntentForPackage(pi.packageName) != null) {
-//                    results.add(pi);
-//                }
-//            }
+
             if (getPackageManager().getApplicationLabel(pi.applicationInfo).toString().toLowerCase().
                     contains(query.toLowerCase())) {
                 if (getPackageManager().getLaunchIntentForPackage(pi.packageName) != null) {
@@ -267,26 +249,15 @@ public class MainActivity extends Activity {
 
     private Integer[] executeSearch(String query) {
         ArrayList<Integer> results = new ArrayList<>();
-        for (Image i: images) {
+        for (Image i : images) {
             if (i.location.toLowerCase().contains(query.toLowerCase()) ||
                     i.date.toLowerCase().contains(query.toLowerCase())) {
                 results.add(i.id);
             }
         }
-        return (Integer[])results.toArray();
-
-//        TextView t = (TextView)findViewById(R.id.text_view);
-//        t.setText("Searching for \"" + query + "\"");
-
-////        GridView gridView = (GridView) findViewById(R.id.gridview);
-//        ArrayList<Integer> results = new ArrayList<>();
-//        for (Image i: images) {
-//            if (i.location.toLowerCase().contains(query.toLowerCase())) {
-//                results.add(i.id);
-//            }
-//        }
-//        return results.toArray(new Integer[results.size()]);
+        return (Integer[]) results.toArray();
     }
+
 
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -324,19 +295,7 @@ public class MainActivity extends Activity {
 
             int numRows = cursor.getCount();
             int numContacts = (numRows < numViews) ? numRows : numViews;
-//            if (cursor.getCount() > 0) {
-//                while (cursor.moveToNext()) {
-//                    String id = cursor.getString(
-//                            cursor.getColumnIndex(ContactsContract.Contacts._ID));
-//                    String name = cursor.getString(
-//                            cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-//                    Log.v(TAG, "Contact found: " + name + " with id " + id);
-//                    if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-//                        //Query phone here.  Covered next
-//                        Log.v(TAG, " and they have a phone number!");
-//                    }
-//                }
-//            }
+
             cursor.moveToNext();
 
 
@@ -381,6 +340,62 @@ public class MainActivity extends Activity {
 
             //TODO: put the IDs of the views in an array, iterate through the ones
             //
+
+
+
+
+
+
+
+
+//            String[] projection = { BaseColumns._ID,
+//                    MediaStore.Audio.Artists.ARTIST, MediaStore.Audio.Media.TITLE };
+
+            String music_where = MediaStore.Audio.Media.TITLE + " LIKE ?";
+            String music_query = "%" + query + "%";
+            String[] params = new String[] { music_query };
+
+            ContentResolver cr2 = getContentResolver();
+//            Cursor q = cr2.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                    projection, music_where, params, MediaStore.Audio.Media.TITLE);
+//
+//            while (q.moveToNext()) {
+//                Log.v("song", q.getString(1) + " " + q.getString(2));
+//            }
+//            q.close();
+
+            Cursor q = cr2.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    //projection, music_where, params, MediaStore.Audio.Media.TITLE);
+                    null, music_where, params, MediaStore.Audio.Media.TITLE);
+
+            int numRowsMusic = q.getCount();
+            int numContactsMusic = (numRowsMusic < numViews) ? numRowsMusic : numViews;
+            q.moveToNext();
+
+            for (int i = 0; i < numContactsMusic; i++) {
+                Integer id = musicViewIds[i];
+                TextView tv2 = (TextView) findViewById(id+buf);
+
+                String musicIdString = q.getString(q.getColumnIndex( MediaStore.Audio.Media._ID));
+                Integer musicId = Integer.parseInt(musicIdString);
+                cachedMusicIds[i] = musicId;
+
+                String name = q.getString(q.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+                tv2.setText(name);
+                tv2.setVisibility(View.VISIBLE);
+                q.moveToNext();
+            }
+
+            for (int i = numContactsMusic; i < numViews; i++) {
+                TextView tv2 = (TextView) findViewById(musicViewIds[i]+buf);
+                tv2.setVisibility(View.GONE);
+            }
+
+
+
+
+
+
         }
     }
 
@@ -414,15 +429,16 @@ public class MainActivity extends Activity {
                         tv.setVisibility(View.GONE);
                     }
 
+                    for (int i = 0; i < numViews; i++) {
+                        TextView tv = (TextView) findViewById(musicViewIds[i]);
+                        tv.setVisibility(View.GONE);
+                    }
+
                     TextView tv = (TextView) findViewById(R.id.app_1);
                     tv.setVisibility(View.GONE);
 //                    tv = (TextView) findViewById(R.id.apps_label);
                 }
-//                else if (newText.equals("popup")) {
-//                    ImageView imageView = new ImageView(c);
-//                    imageView.setImageResource(R.drawable.ann_arbor_1);
-//                    PopupWindow popupWindow = new PopupWindow(imageView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-//                }
+
                 return false;
             }
         });

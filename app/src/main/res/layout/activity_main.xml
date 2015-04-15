@@ -63,13 +63,46 @@
         android:visibility="gone"
         />
 
+    <TextView android:id="@+id/music_label"
+        android:text="@string/music"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:textStyle="bold"
+        android:layout_below="@id/app_1"
+        android:visibility="visible" />
+
+    <TextView android:id="@+id/music_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_below="@id/music_label"
+        android:visibility="gone"
+        />
+
+    <TextView android:id="@+id/music_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_below="@id/music_1"
+        android:visibility="gone"
+        />
+
+    <TextView android:id="@+id/music_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_below="@id/music_2"
+        android:visibility="gone"
+        />
+
     <TextView android:id="@+id/photos_label"
         android:text="@string/photos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="5dp"
         android:textStyle="bold"
-        android:layout_below="@id/app_1"
+        android:layout_below="@id/music_3"
         android:visibility="visible" />
 
     <GridView xmlns:android="http://schemas.android.com/apk/res/android"

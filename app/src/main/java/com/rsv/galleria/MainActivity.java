@@ -32,6 +32,12 @@ public class MainActivity extends Activity {
 
     private static final Integer numViews = 3;
 
+    private static final Integer[] contactViewIds = { R.id.contact_1, R.id.contact_2, R.id.contact_3 };
+
+    private final Context c = this;
+
+    private static Integer[] cachedIds = new Integer[numViews];
+
     // 9 Photos, 3 Ann Arbor, 3 New York, 3 Seattle
     private Integer[] defaultImages = {
         R.drawable.ann_arbor_1,
@@ -81,6 +87,39 @@ public class MainActivity extends Activity {
         Log.v(TAG, "MainActivity created");
         handleIntent(getIntent());
 
+        TextView tv = (TextView) findViewById(R.id.contact_1);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, String.valueOf(cachedIds[0]));
+                intent.setData(uri);
+                c.startActivity(intent);
+            }
+        });
+
+        tv = (TextView) findViewById(R.id.contact_2);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, String.valueOf(cachedIds[1]));
+                intent.setData(uri);
+                c.startActivity(intent);
+            }
+        });
+
+        tv = (TextView) findViewById(R.id.contact_3);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, String.valueOf(cachedIds[2]));
+                intent.setData(uri);
+                c.startActivity(intent);
+            }
+        });
+
 //        ContentResolver cr = getContentResolver();
 //        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 //        if (cur.getCount() > 0) {
@@ -104,7 +143,6 @@ public class MainActivity extends Activity {
         }
         gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
 
-        final Context c = this;
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             private PopupWindow cachedWindow = new PopupWindow();
 
@@ -193,9 +231,10 @@ public class MainActivity extends Activity {
             gridview.invalidateViews();
 
             /* UPDATE THE LIST VIEW */
-            Log.v(TAG, "Second clause");
+            //Log.v(TAG, "Second clause");
             String whereClause = ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?";
             String queryLike = "%" + query + "%";
+//            String orderBy = "LOCATE('" + query + "'," + ContactsContract.Contacts.DISPLAY_NAME + ")";
             ContentResolver cr = getContentResolver();
             Cursor cursor = cr.query(
                     ContactsContract.Contacts.CONTENT_URI,
@@ -206,28 +245,44 @@ public class MainActivity extends Activity {
 
             int numRows = cursor.getCount();
             int numContacts = (numRows < numViews) ? numRows : numViews;
-            if (cursor.getCount() > 0) {
-                while (cursor.moveToNext()) {
-                    String id = cursor.getString(
-                            cursor.getColumnIndex(ContactsContract.Contacts._ID));
-                    String name = cursor.getString(
-                            cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                    Log.v(TAG, "Contact found: " + name + " with id " + id);
-                    if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-                        //Query phone here.  Covered next
-                        Log.v(TAG, " and they have a phone number!");
-                    }
-                }
-            }
+//            if (cursor.getCount() > 0) {
+//                while (cursor.moveToNext()) {
+//                    String id = cursor.getString(
+//                            cursor.getColumnIndex(ContactsContract.Contacts._ID));
+//                    String name = cursor.getString(
+//                            cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+//                    Log.v(TAG, "Contact found: " + name + " with id " + id);
+//                    if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+//                        //Query phone here.  Covered next
+//                        Log.v(TAG, " and they have a phone number!");
+//                    }
+//                }
+//            }
+            cursor.moveToNext();
 
-            Integer[] contactViewIds = { R.id.contact_1, R.id.contact_2, R.id.contact_3 };
+
+
             for (int i = 0; i < numContacts; i++) {
                 Integer id = contactViewIds[i];
                 TextView tv = (TextView) findViewById(id);
-            }
-            for (int i = numContacts; i < numViews; i++) {
 
+                String contactIdString = cursor.getString(
+                            cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                Integer contactId = Integer.parseInt(contactIdString);
+                cachedIds[i] = contactId;
+
+                String name = cursor.getString(
+                        cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                tv.setText(name);
+                tv.setVisibility(View.VISIBLE);
+                cursor.moveToNext();
             }
+
+            for (int i = numContacts; i < numViews; i++) {
+                TextView tv = (TextView) findViewById(contactViewIds[i]);
+                tv.setVisibility(View.GONE);
+            }
+
             //TODO: put the IDs of the views in an array, iterate through the ones
             //
         }
@@ -257,6 +312,11 @@ public class MainActivity extends Activity {
                 if (TextUtils.isEmpty(newText)) {
                     GridView gridView = (GridView) findViewById(R.id.gridview);
                     gridView.setAdapter(new ImageAdapter(c, defaultImages));
+
+                    for (int i = 0; i < numViews; i++) {
+                        TextView tv = (TextView) findViewById(contactViewIds[i]);
+                        tv.setVisibility(View.GONE);
+                    }
                 }
 // else if (newText.equals("popup")) {
 //                    ImageView imageView = new ImageView(c);

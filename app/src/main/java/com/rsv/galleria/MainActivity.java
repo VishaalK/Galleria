@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -74,6 +75,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Set;
 
 import static java.lang.Math.abs;
 
@@ -102,7 +104,9 @@ public class MainActivity extends Activity {
 
     private ArrayList<LatLongId> cachedLatLongIds;
 
-//    private Hashtable<>
+    private Hashtable<String, ArrayList<Integer>> hash;
+
+
 
     private static int buf = 0;
 
@@ -329,21 +333,42 @@ public class MainActivity extends Activity {
             tmp.Long = actualimagecursor.getDouble(actualimagecursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE));
 
 
-            Log.v("GPS", "ID: " + actualimagecursor.getInt(
-                    actualimagecursor.getColumnIndex(MediaStore.Images.Media._ID)));
-            Log.v("GPS", "Lat: " + actualimagecursor.getDouble(
-                    actualimagecursor.getColumnIndex(MediaStore.Images.Media.LATITUDE)));
-            Log.v("GPS", "Long: "+actualimagecursor.getDouble(
-                    actualimagecursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE)));
+//            Log.v("GPS", "ID: " + actualimagecursor.getInt(
+//                    actualimagecursor.getColumnIndex(MediaStore.Images.Media._ID)));
+//            Log.v("GPS", "Lat: " + actualimagecursor.getDouble(
+//                    actualimagecursor.getColumnIndex(MediaStore.Images.Media.LATITUDE)));
+//            Log.v("GPS", "Long: "+actualimagecursor.getDouble(
+//                    actualimagecursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE)));
             if(abs(tmp.Lat) > 0.5 && abs(tmp.Long) > 0.5) {
             cachedLatLongIds.add(tmp);
             }
 
 
             fileList.add(( uripic));
-            Log.v(TAG, fileName);
+//            Log.v(TAG, fileName);
         }
 
+        hash = new Hashtable<>();
+        Geocoder gc = new Geocoder(this, Locale.getDefault());
+        for (LatLongId x: cachedLatLongIds) {
+            List<Address> addresses = new ArrayList<>();
+            try {
+                addresses = gc.getFromLocation(x.Lat, x.Long, 1);
+            } catch (IOException e) {
+                Log.v(TAG, "Reverse geocoding went wrong");
+            }
+            for (Address a: addresses) {
+                String word = a.getLocality().toLowerCase();
+
+                if(hash.containsKey(word)){
+                    hash.get(word).add(x._ID);
+                } else{
+                    hash.put(word, new ArrayList<Integer>());
+                    hash.get(word).add(x._ID);
+                }
+//                Log.v("searchGPS", "adding "+word+" to hash table");
+            }
+        }
 
 
         gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
@@ -423,37 +448,32 @@ public class MainActivity extends Activity {
                 query = query.substring(0, query.length()-1);
                 Log.v("query", "Query is now: " + query + ".");
             }
+            query = query.toLowerCase();
             TextView t = (TextView)findViewById(R.id.text_view);
             t.setText("Searching for \"" + query + "\"");
 
             /* UPDATE THE GRID VIEW */
-            Geocoder gc = new Geocoder(this, Locale.getDefault());
-            final ArrayList<Integer> geocodedResults = new ArrayList<>();
-            for (LatLongId x: cachedLatLongIds) {
-                List<Address> addresses = new ArrayList<>();
-                try {
-                    addresses = gc.getFromLocation(x.Lat, x.Long, 1);
-                } catch (IOException e) {
-                    Log.v(TAG, "Reverse geocoding went wrong");
-                }
-                for (Address a: addresses) {
-                    Log.v("searchGPS", a.getLocality());
-                    if (a.getLocality().toLowerCase().contains(query.toLowerCase())) {
-                        geocodedResults.add(x._ID);
-                    }
+            String searchQuery = query;
+            for(String s : hash.keySet()){
+                if(s.startsWith(query)){
+                    Log.v("searchQuery", "switched from "+query+" to "+s);
+                    searchQuery = s;
                 }
             }
-            GridView gridview = (GridView) findViewById(R.id.gridview);
-            gridview.setAdapter(new ImageAdapter(this,geocodedResults.toArray(new Integer[geocodedResults.size()])));
-            gridview.invalidateViews();
-            gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            if(hash.containsKey(searchQuery)) {
+                final ArrayList<Integer> geocodedResults = hash.get(searchQuery);
+                GridView gridview = (GridView) findViewById(R.id.gridview);
+                gridview.setAdapter(new ImageAdapter(this, geocodedResults.toArray(new Integer[geocodedResults.size()])));
+                gridview.invalidateViews();
+                gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        Log.v("itemclick", "position: " + position);
+                        getThumbnail(geocodedResults.get(position));
+                    }
+                });
+            }
 
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Log.v("itemclick", "position: " + position);
-                    getThumbnail(geocodedResults.get(position));
-                }
-            });
 
             /* UPDATE THE LIST VIEW */
             //Log.v(TAG, "Second clause");

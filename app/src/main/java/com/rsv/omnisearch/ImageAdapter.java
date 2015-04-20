@@ -1,4 +1,4 @@
-package com.rsv.galleria;
+package com.rsv.omnisearch;
 
 import android.content.Context;
 import android.graphics.Bitmap;

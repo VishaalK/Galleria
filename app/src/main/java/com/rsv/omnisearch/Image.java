@@ -1,4 +1,4 @@
-package com.rsv.galleria;
+package com.rsv.omnisearch;
 
 /**
  * Created by Vishaal on 3/10/15.

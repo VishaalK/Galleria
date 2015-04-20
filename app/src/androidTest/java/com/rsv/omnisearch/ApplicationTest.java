@@ -1,4 +1,4 @@
-package com.rsv.galleria;
+package com.rsv.omnisearch;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

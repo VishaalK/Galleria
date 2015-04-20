@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Galleria</string>
+    <string name="app_name">OmniSearch</string>
     <string name="search">Search</string>
     <string name="search_hint">Search Hint</string>
     <string name="photos">Photos</string>

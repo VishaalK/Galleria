@@ -327,7 +327,7 @@ public class MainActivity extends Activity {
                     i--; //random backend flaw: Mitigates multiple ppl of same name, ie "David Lee"
                 }
                 cursor.moveToNext();
-                if(cursor.isLast()){
+                if(cursor.isAfterLast()){
                     numContacts = numTrueContacts;
                     break;
                 }
@@ -411,8 +411,8 @@ public class MainActivity extends Activity {
             q2.moveToNext();
             Log.v("numMusic", "titles: " + numq1 + "; artists: " + numq2);
 
-//            int numTrueMusic = 0;
-//            String[] dupMusicChecker = {"|", "|", "|"};
+            int numTrueMusic = 0;
+            String[] myMusArray = {"|", "|", "|"};
 
             for (int i = 0; i < numq1; i++) {
                 Integer id = musicViewIds[i];
@@ -423,12 +423,39 @@ public class MainActivity extends Activity {
                 cachedMusicIds[i] = musicId;
 
                 String name = q.getString(q.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
-                tv2.setText(name);
-                tv2.setVisibility(View.VISIBLE);
+                boolean flag = false;
+//                Log.v("sanity", "we got here");
+                for(int j=0; j<i; j++){
+                    if(name.equalsIgnoreCase(myMusArray[j])){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag == false) {
+                    tv2.setText(name);
+                    tv2.setVisibility(View.VISIBLE);
+                    myMusArray[i] = name;
+                    numTrueMusic++;
+                } else if(flag == true){
+                    Log.v("music", name + " already appears!");
+                    i--;
+                }
                 q.moveToNext();
+//                Log.v("sanity", "sanity2");
+                if(q.isAfterLast()){
+                    numq1 = numTrueMusic;
+                    break;
+                }
+//                Log.v("sanity", "sanity3");
             }
 
             for (int i = numq1; i < numContactsMusic; i++) {
+//                Log.v("sanity2", "sanity4");
+                if(q2.isAfterLast()){
+                    numContactsMusic = numTrueMusic;
+                    break;
+                }
+//                Log.v("sanity2", "sanity5");
                 Integer id = musicViewIds[i];
                 TextView tv2 = (TextView) findViewById(id+buf);
 
@@ -437,8 +464,22 @@ public class MainActivity extends Activity {
                 cachedMusicIds[i] = musicId;
 
                 String name = q2.getString(q2.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
-                tv2.setText(name);
-                tv2.setVisibility(View.VISIBLE);
+                boolean flag = false;
+//                Log.v("sanity2", "sanity6");
+                for(int j=0; j<i; j++){
+                    if(name.equalsIgnoreCase(myMusArray[j])){
+                        flag = true;
+                    }
+                }
+                if(flag == false) {
+                    tv2.setText(name);
+                    tv2.setVisibility(View.VISIBLE);
+                    myMusArray[i] = name;
+                    numTrueMusic++;
+                } else if(flag == true){
+                    Log.v("music2", name + " already appears!");
+                    i--;
+                }
                 q2.moveToNext();
             }
 

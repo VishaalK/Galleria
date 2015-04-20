@@ -1,6 +1,8 @@
 package com.rsv.galleria;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -41,7 +43,13 @@ public class ImageAdapter extends BaseAdapter {
             imageView = (ImageView) convertView;
         }
 
-        imageView.setImageResource(mThumbIds[position]);
+        int imageID = mThumbIds[position];
+        final int pos = position;
+        Bitmap bm = MediaStore.Images.Thumbnails.getThumbnail(mContext.getContentResolver(),
+                imageID, MediaStore.Images.Thumbnails.MINI_KIND, null);
+        imageView.setImageBitmap(bm);
+
+//        imageView.setImageResource(mThumbIds[position]);
         return imageView;
     }
 }

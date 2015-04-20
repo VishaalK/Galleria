@@ -11,6 +11,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.media.ExifInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -31,6 +33,8 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 
@@ -69,8 +73,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Locale;
+
+import static java.lang.Math.abs;
 
 public class MainActivity extends Activity {
+    public class LatLongId {
+        Integer _ID;
+        Double Lat;
+        Double Long;
+    }
+
     private static final String TAG = "MainActivity";
 
 //    final Uri sourceUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -86,6 +99,10 @@ public class MainActivity extends Activity {
     private static Integer[] cachedIds = new Integer[numViews];
 
     private static Integer[] cachedMusicIds = new Integer[numViews];
+
+    private ArrayList<LatLongId> cachedLatLongIds;
+
+//    private Hashtable<>
 
     private static int buf = 0;
 
@@ -299,18 +316,28 @@ public class MainActivity extends Activity {
 
         int actual_image_column_index = actualimagecursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
 
+        cachedLatLongIds = new ArrayList<>();
         for ( int i = 0 ; i < actualimagecursor.getCount() ; i++ )
         {
             actualimagecursor.moveToPosition(i);
             String fileName = actualimagecursor.getString(actual_image_column_index);
             Uri uripic = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, fileName);
 
-            Log.v("GPS", "ID: "+actualimagecursor.getInt(
+            LatLongId tmp = new LatLongId();
+            tmp._ID = actualimagecursor.getInt(actualimagecursor.getColumnIndex(MediaStore.Images.Media._ID));
+            tmp.Lat = actualimagecursor.getDouble(actualimagecursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
+            tmp.Long = actualimagecursor.getDouble(actualimagecursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE));
+
+
+            Log.v("GPS", "ID: " + actualimagecursor.getInt(
                     actualimagecursor.getColumnIndex(MediaStore.Images.Media._ID)));
+            Log.v("GPS", "Lat: " + actualimagecursor.getDouble(
+                    actualimagecursor.getColumnIndex(MediaStore.Images.Media.LATITUDE)));
             Log.v("GPS", "Long: "+actualimagecursor.getDouble(
                     actualimagecursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE)));
-            Log.v("GPS", "Lat: "+actualimagecursor.getDouble(
-                    actualimagecursor.getColumnIndex(MediaStore.Images.Media.LATITUDE)));
+            if(abs(tmp.Lat) > 0.5 && abs(tmp.Long) > 0.5) {
+            cachedLatLongIds.add(tmp);
+            }
 
 
             fileList.add(( uripic));
@@ -328,7 +355,6 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
             }
         });
-
 
         String[] from = {MediaStore.MediaColumns.TITLE};
         int[] to = {android.R.id.text1};
@@ -354,7 +380,7 @@ public class MainActivity extends Activity {
                 getThumbnail(int_ID);
             }
         });
-
+        Log.v("mainActivity", "done with main activity");
     }
 
     @Override
@@ -393,22 +419,41 @@ public class MainActivity extends Activity {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             // Get search string and set query
             String query = intent.getStringExtra(SearchManager.QUERY);
+            if(query.endsWith(" ")){
+                query = query.substring(0, query.length()-1);
+                Log.v("query", "Query is now: " + query + ".");
+            }
             TextView t = (TextView)findViewById(R.id.text_view);
             t.setText("Searching for \"" + query + "\"");
 
             /* UPDATE THE GRID VIEW */
-            GridView gridview = (GridView) findViewById(R.id.gridview);
-            ArrayList<Integer> results = new ArrayList<>();
-            for (Image i: images) {
-                if (i.location.toLowerCase().contains(query.toLowerCase()) ||
-                        i.date.toLowerCase().contains(query.toLowerCase())) {
-                    results.add(i.id);
+            Geocoder gc = new Geocoder(this, Locale.getDefault());
+            final ArrayList<Integer> geocodedResults = new ArrayList<>();
+            for (LatLongId x: cachedLatLongIds) {
+                List<Address> addresses = new ArrayList<>();
+                try {
+                    addresses = gc.getFromLocation(x.Lat, x.Long, 1);
+                } catch (IOException e) {
+                    Log.v(TAG, "Reverse geocoding went wrong");
+                }
+                for (Address a: addresses) {
+                    Log.v("searchGPS", a.getLocality());
+                    if (a.getLocality().toLowerCase().contains(query.toLowerCase())) {
+                        geocodedResults.add(x._ID);
+                    }
                 }
             }
-            cachedResults = new Integer[results.size()];
-            System.arraycopy(results.toArray(new Integer[0]), 0, cachedResults, 0, results.size());
-            gridview.setAdapter(new ImageAdapter(this, results.toArray(new Integer[results.size()])));
+            GridView gridview = (GridView) findViewById(R.id.gridview);
+            gridview.setAdapter(new ImageAdapter(this,geocodedResults.toArray(new Integer[geocodedResults.size()])));
             gridview.invalidateViews();
+            gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Log.v("itemclick", "position: " + position);
+                    getThumbnail(geocodedResults.get(position));
+                }
+            });
 
             /* UPDATE THE LIST VIEW */
             //Log.v(TAG, "Second clause");
@@ -553,7 +598,6 @@ public class MainActivity extends Activity {
 
                 String name = q.getString(q.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
                 boolean flag = false;
-//                Log.v("sanity", "we got here");
                 for(int j=0; j<i; j++){
                     if(name.equalsIgnoreCase(myMusArray[j])){
                         flag = true;
@@ -570,21 +614,17 @@ public class MainActivity extends Activity {
                     i--;
                 }
                 q.moveToNext();
-//                Log.v("sanity", "sanity2");
                 if(q.isAfterLast()){
                     numq1 = numTrueMusic;
                     break;
                 }
-//                Log.v("sanity", "sanity3");
             }
 
             for (int i = numq1; i < numContactsMusic; i++) {
-//                Log.v("sanity2", "sanity4");
                 if(q2.isAfterLast()){
                     numContactsMusic = numTrueMusic;
                     break;
                 }
-//                Log.v("sanity2", "sanity5");
                 Integer id = musicViewIds[i];
                 TextView tv2 = (TextView) findViewById(id+buf);
 
@@ -594,7 +634,6 @@ public class MainActivity extends Activity {
 
                 String name = q2.getString(q2.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
                 boolean flag = false;
-//                Log.v("sanity2", "sanity6");
                 for(int j=0; j<i; j++){
                     if(name.equalsIgnoreCase(myMusArray[j])){
                         flag = true;
@@ -787,7 +826,7 @@ public class MainActivity extends Activity {
                     "NO Thumbnail!",
                     Toast.LENGTH_LONG).show();
         }
-
+        thumbCursor.close();
         return thumbBitmap;
     }
 }

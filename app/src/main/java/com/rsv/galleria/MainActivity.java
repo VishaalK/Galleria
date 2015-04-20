@@ -11,6 +11,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -156,11 +157,11 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 PackageInfo pi = curResultPackage;
-                Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
-                Log.v(TAG, pi.packageName);
-
-                Log.v(TAG, "2 pkgName: " + pi.applicationInfo.packageName);
-                Log.v(TAG, "2 name: " + pi.applicationInfo.name);
+//                Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
+//                Log.v(TAG, pi.packageName);
+//
+//                Log.v(TAG, "2 pkgName: " + pi.applicationInfo.packageName);
+//                Log.v(TAG, "2 name: " + pi.applicationInfo.name);
                 Intent i = getPackageManager().getLaunchIntentForPackage(pi.packageName);
                 startActivity(i);
             }
@@ -206,8 +207,8 @@ public class MainActivity extends Activity {
 
 
         for (PackageInfo pi : packageList) {
-            Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
-            Log.v(TAG, pi.packageName);
+//            Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
+//            Log.v(TAG, pi.packageName);
         }
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
@@ -297,8 +298,8 @@ public class MainActivity extends Activity {
             int numContacts = (numRows < numViews) ? numRows : numViews;
 
             cursor.moveToNext();
-
-
+            int numTrueContacts = 0;
+            String[] myIntArray = {"|", "|", "|"};
             for (int i = 0; i < numContacts; i++) {
                 Integer id = contactViewIds[i];
                 TextView tv = (TextView) findViewById(id);
@@ -310,9 +311,26 @@ public class MainActivity extends Activity {
 
                 String name = cursor.getString(
                         cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                tv.setText(name);
-                tv.setVisibility(View.VISIBLE);
+                boolean flag = false;
+                for(int j=0; j<i; j++){
+                    if(name.equalsIgnoreCase(myIntArray[j])){
+                        flag = true;
+                    }
+                }
+                if(flag == false) {
+                    tv.setText(name);
+                    tv.setVisibility(View.VISIBLE);
+                    myIntArray[i] = name;
+                    numTrueContacts++;
+                } else if(flag == true){
+                    Log.v("contacts", name + " already appears");
+                    i--; //random backend flaw: Mitigates multiple ppl of same name, ie "David Lee"
+                }
                 cursor.moveToNext();
+                if(cursor.isLast()){
+                    numContacts = numTrueContacts;
+                    break;
+                }
             }
 
             for (int i = numContacts; i < numViews; i++) {
@@ -368,11 +386,35 @@ public class MainActivity extends Activity {
                     //projection, music_where, params, MediaStore.Audio.Media.TITLE);
                     null, music_where, params, MediaStore.Audio.Media.TITLE);
 
+            ContentResolver cr3 = getContentResolver();
+            String music_where2 = MediaStore.Audio.Media.ARTIST + " LIKE ?";
+            Cursor q2 = cr3.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    null, music_where2, params, MediaStore.Audio.Media.ARTIST);
+
             int numRowsMusic = q.getCount();
             int numContactsMusic = (numRowsMusic < numViews) ? numRowsMusic : numViews;
             q.moveToNext();
 
-            for (int i = 0; i < numContactsMusic; i++) {
+            int numq1 = numContactsMusic;
+            int numq2 = q2.getCount();
+            if(numq1 >= numViews){
+                ;
+            } else{
+                if(numq1 + numq2 >= numViews){
+                    numContactsMusic = numViews;
+                    numq2 = numContactsMusic - numq1;
+                } else{
+                    numContactsMusic = numq1 + numq2;
+                    //numq2 remains the same
+                }
+            }
+            q2.moveToNext();
+            Log.v("numMusic", "titles: " + numq1 + "; artists: " + numq2);
+
+//            int numTrueMusic = 0;
+//            String[] dupMusicChecker = {"|", "|", "|"};
+
+            for (int i = 0; i < numq1; i++) {
                 Integer id = musicViewIds[i];
                 TextView tv2 = (TextView) findViewById(id+buf);
 
@@ -384,6 +426,20 @@ public class MainActivity extends Activity {
                 tv2.setText(name);
                 tv2.setVisibility(View.VISIBLE);
                 q.moveToNext();
+            }
+
+            for (int i = numq1; i < numContactsMusic; i++) {
+                Integer id = musicViewIds[i];
+                TextView tv2 = (TextView) findViewById(id+buf);
+
+                String musicIdString = q2.getString(q2.getColumnIndex( MediaStore.Audio.Media._ID));
+                Integer musicId = Integer.parseInt(musicIdString);
+                cachedMusicIds[i] = musicId;
+
+                String name = q2.getString(q2.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+                tv2.setText(name);
+                tv2.setVisibility(View.VISIBLE);
+                q2.moveToNext();
             }
 
             for (int i = numContactsMusic; i < numViews; i++) {

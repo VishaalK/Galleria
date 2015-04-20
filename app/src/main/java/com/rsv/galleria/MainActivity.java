@@ -14,8 +14,6 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
-import android.media.ExifInterface;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -27,7 +25,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.PopupWindow;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,43 +39,17 @@ import java.util.Iterator;
 import java.util.List;
 
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.SearchManager;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.content.CursorLoader;
-import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.SearchView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Set;
 
 import static java.lang.Math.abs;
 
@@ -90,8 +61,6 @@ public class MainActivity extends Activity {
     }
 
     private static final String TAG = "MainActivity";
-
-//    final Uri sourceUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
     private static final Integer numViews = 3;
 
@@ -107,9 +76,9 @@ public class MainActivity extends Activity {
 
     private ArrayList<LatLongId> cachedLatLongIds;
 
+    private ArrayList<Integer> lolresults;
+
     private Hashtable<String, ArrayList<Integer>> hash;
-
-
 
     private static int buf = 0;
 
@@ -119,54 +88,6 @@ public class MainActivity extends Activity {
 
     private PackageInfo curResultPackage;
     // 9 Photos, 3 Ann Arbor, 3 New York, 3 Seattle
-    private Integer[] defaultImages = {
-        R.drawable.ann_arbor_1,
-        R.drawable.seattle_2,
-        R.drawable.ann_arbor_3,
-        R.drawable.new_york_1,
-        R.drawable.sample_1,
-        R.drawable.ann_arbor_2,
-        R.drawable.new_york_2,
-        R.drawable.seattle_1,
-        R.drawable.sample_0,
-        R.drawable.new_york_3,
-        R.drawable.new_york_5,
-        R.drawable.new_york_6,
-        R.drawable.seattle_3,
-        R.drawable.new_york_4,
-        R.drawable.aussie_1,
-        R.drawable.aussie_2
-//        R.drawable.home1,
-//        R.drawable.home2,
-//        R.drawable.home3,
-//        R.drawable.home4,
-//        R.drawable.food1
-    };
-
-    private Image[] images = {
-            new Image("Ann Arbor", "April 5 2015", R.drawable.ann_arbor_1),
-            new Image("Seattle", "April 5 2015", R.drawable.seattle_2),
-            new Image("Ann Arbor", "April 6 2015", R.drawable.ann_arbor_3),
-            new Image("New York", "April 6 2015", R.drawable.new_york_1),
-            new Image("New York", "May 5 2015", R.drawable.sample_1),
-            new Image("Ann Arbor", "May 5 2014", R.drawable.ann_arbor_2),
-            new Image("New York", "May 5 2015", R.drawable.new_york_2),
-            new Image("Seattle", "", R.drawable.seattle_1),
-            new Image("New York", "", R.drawable.sample_0),
-            new Image("New York", "", R.drawable.new_york_3),
-            new Image("New York", "", R.drawable.new_york_5),
-            new Image("New York", "", R.drawable.new_york_6),
-            new Image("Seattle", "", R.drawable.seattle_3),
-            new Image("New York", "", R.drawable.new_york_4),
-            new Image("Australia", "", R.drawable.aussie_1),
-            new Image("Australia", "", R.drawable.aussie_2)
-            /*new Image("Ann Arbor", "April 15 2015", R.drawable.home1),
-            new Image("Ann Arbor", "April 15 2015", R.drawable.home2),
-            new Image("Ann Arbor", "April 15 2015", R.drawable.home3),
-            new Image("Ann Arbor", "April 15 2015", R.drawable.home4)*/
-    };
-
-    private Integer[] cachedResults = defaultImages;
 
     private boolean isSystemPackage(PackageInfo pkgInfo) {
         return ((pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) ? true
@@ -176,18 +97,11 @@ public class MainActivity extends Activity {
 
 
 
-    public final static String EXTRA_MESSAGE = "com.mycompany.myfirstapp.MESSAGE";
-
     //define source of MediaStore.Images.Media, internal or external storage
     final Uri sourceUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     final Uri thumbUri = MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI;
     final String thumb_DATA = MediaStore.Images.Thumbnails.DATA;
     final String thumb_IMAGE_ID = MediaStore.Images.Thumbnails.IMAGE_ID;
-
-    //SimpleCursorAdapter mySimpleCursorAdapter;
-    MyAdapter mySimpleCursorAdapter;
-
-    GridView myGridView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -284,28 +198,14 @@ public class MainActivity extends Activity {
                 .getInstalledPackages(PackageManager.GET_PERMISSIONS);
 
 
-        for (PackageInfo pi : packageList) {
+//        for (PackageInfo pi : packageList) {
 //            Log.v(TAG, getPackageManager().getApplicationLabel(pi.applicationInfo).toString());
 //            Log.v(TAG, pi.packageName);
-        }
+//        }
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
-        ArrayList<Integer> initialImages = new ArrayList<>();
-        for (Image i: images) {
-            initialImages.add(i.id);
-        }
-        gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
 
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            private PopupWindow cachedWindow = new PopupWindow();
-
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
-        ArrayList<Uri> fileList = new ArrayList<Uri>();
+//        ArrayList<Uri> fileList = new ArrayList<Uri>();
         String[] proj = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID };
         ContentResolver crap = getContentResolver();
         Cursor actualimagecursor = crap.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, proj,
@@ -324,12 +224,12 @@ public class MainActivity extends Activity {
         int actual_image_column_index = actualimagecursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
 
         cachedLatLongIds = new ArrayList<>();
+        lolresults = new ArrayList<>();
         for ( int i = 0 ; i < actualimagecursor.getCount() ; i++ )
         {
             actualimagecursor.moveToPosition(i);
             String fileName = actualimagecursor.getString(actual_image_column_index);
-            Uri uripic = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, fileName);
-
+//            Uri uripic = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, fileName);
             LatLongId tmp = new LatLongId();
             tmp._ID = actualimagecursor.getInt(actualimagecursor.getColumnIndex(MediaStore.Images.Media._ID));
             tmp.Lat = actualimagecursor.getDouble(actualimagecursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
@@ -343,11 +243,11 @@ public class MainActivity extends Activity {
 //            Log.v("GPS", "Long: "+actualimagecursor.getDouble(
 //                    actualimagecursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE)));
             if(abs(tmp.Lat) > 0.5 && abs(tmp.Long) > 0.5) {
-            cachedLatLongIds.add(tmp);
+                cachedLatLongIds.add(tmp);
             }
+            lolresults.add(tmp._ID);
 
-
-            fileList.add(( uripic));
+//            fileList.add(( uripic));
 //            Log.v(TAG, fileName);
         }
 
@@ -374,40 +274,16 @@ public class MainActivity extends Activity {
         }
 
 
-        gridview.setAdapter(new ImageAdapter(this, initialImages.toArray(new Integer[initialImages.size()])));
-
+        gridview.setAdapter(new ImageAdapter(this, lolresults.toArray(new Integer[lolresults.size()])));
+        gridview.invalidateViews();
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            private PopupWindow cachedWindow = new PopupWindow();
-
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        String[] from = {MediaStore.MediaColumns.TITLE};
-        int[] to = {android.R.id.text1};
-
-        CursorLoader cursorLoader = new CursorLoader( this, sourceUri, null, null, null,
-                MediaStore.Audio.Media.TITLE);
-
-        Cursor cursor = cursorLoader.loadInBackground();
-
-        mySimpleCursorAdapter = new MyAdapter( this, android.R.layout.simple_list_item_1, cursor,
-                from, to, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-
-        gridview.setAdapter(mySimpleCursorAdapter);
-
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = mySimpleCursorAdapter.getCursor();
-                cursor.moveToPosition(position);
-
-                int int_ID = cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID));
-                getThumbnail(int_ID);
+                Log.v("itemclick", "position: " + position);
+                getThumbnail(lolresults.get(position));
             }
         });
+
         Log.v("mainActivity", "done with main activity");
     } //onCreate()
 
@@ -461,17 +337,6 @@ public class MainActivity extends Activity {
         return results;
     }
 
-    private Integer[] executeSearch(String query) {
-        ArrayList<Integer> results = new ArrayList<>();
-        for (Image i : images) {
-            if (i.location.toLowerCase().contains(query.toLowerCase()) ||
-                    i.date.toLowerCase().contains(query.toLowerCase())) {
-                results.add(i.id);
-            }
-        }
-        return (Integer[]) results.toArray();
-    }
-
 
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -505,6 +370,11 @@ public class MainActivity extends Activity {
                         getThumbnail(geocodedResults.get(position));
                     }
                 });
+            } else{
+                GridView gridview = (GridView) findViewById(R.id.gridview);
+                gridview.invalidateViews();
+                Integer [] tmpArray = new Integer[0];
+                gridview.setAdapter(new ImageAdapter(this, tmpArray));
             }
 
 
@@ -742,8 +612,8 @@ public class MainActivity extends Activity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (TextUtils.isEmpty(newText)) {
-                    GridView gridView = (GridView) findViewById(R.id.gridview);
-                    gridView.setAdapter(new ImageAdapter(c, defaultImages));
+//                    GridView gridView = (GridView) findViewById(R.id.gridview);
+//                    gridView.setAdapter(new ImageAdapter(c, defaultImages));
 
                     for (int i = 0; i < numViews; i++) {
                         TextView tv = (TextView) findViewById(contactViewIds[i]);

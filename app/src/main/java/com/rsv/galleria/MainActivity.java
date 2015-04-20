@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -31,7 +32,9 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -366,7 +369,7 @@ public class MainActivity extends Activity {
                     hash.put(word, new ArrayList<Integer>());
                     hash.get(word).add(x._ID);
                 }
-//                Log.v("searchGPS", "adding "+word+" to hash table");
+                Log.v("searchGPS", "adding "+word+" to hash table");
             }
         }
 
@@ -406,11 +409,41 @@ public class MainActivity extends Activity {
             }
         });
         Log.v("mainActivity", "done with main activity");
-    }
+    } //onCreate()
 
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
+    }
+
+    private Uri getPhotoUriFromID(String id) {
+        try {
+            Cursor cur = getContentResolver()
+                    .query(ContactsContract.Data.CONTENT_URI,
+                            null,
+                            ContactsContract.Data.CONTACT_ID
+                                    + "="
+                                    + id
+                                    + " AND "
+                                    + ContactsContract.Data.MIMETYPE
+                                    + "='"
+                                    + ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE
+                                    + "'", null, null);
+            if (cur != null) {
+                if (!cur.moveToFirst()) {
+                    return null; // no photo
+                }
+            } else {
+                return null; // error in cursor process
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        Uri person = ContentUris.withAppendedId(
+                ContactsContract.Contacts.CONTENT_URI, Long.parseLong(id));
+        return Uri.withAppendedPath(person,
+                ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
     }
 
     private List<PackageInfo> searchPackages(String query, List<PackageInfo> packages) {
@@ -501,6 +534,19 @@ public class MainActivity extends Activity {
                 String contactIdString = cursor.getString(
                             cursor.getColumnIndex(ContactsContract.Contacts._ID));
                 Integer contactId = Integer.parseInt(contactIdString);
+                Uri uri = getPhotoUriFromID(contactIdString);
+                Drawable yourDrawable;
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(uri);
+                    yourDrawable = Drawable.createFromStream(inputStream, uri.toString() );
+                } catch (FileNotFoundException e) {
+                    yourDrawable = getResources().getDrawable(R.drawable.icon);
+                } catch (NullPointerException e) {
+                    yourDrawable = getResources().getDrawable(R.drawable.icon);
+                }
+                yourDrawable.setBounds(0, 0, 40, 40);
+                tv.setCompoundDrawables(yourDrawable, null, null, null);
+                tv.setCompoundDrawablePadding(15);
                 cachedIds[i] = contactId;
 
                 String name = cursor.getString(
@@ -559,22 +605,12 @@ public class MainActivity extends Activity {
 
 
 
-
-//            String[] projection = { BaseColumns._ID,
-//                    MediaStore.Audio.Artists.ARTIST, MediaStore.Audio.Media.TITLE };
-
+            /* UPDATE THE TEXT VIEW OF MUSIC */
             String music_where = MediaStore.Audio.Media.TITLE + " LIKE ?";
             String music_query = "%" + query + "%";
             String[] params = new String[] { music_query };
 
             ContentResolver cr2 = getContentResolver();
-//            Cursor q = cr2.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-//                    projection, music_where, params, MediaStore.Audio.Media.TITLE);
-//
-//            while (q.moveToNext()) {
-//                Log.v("song", q.getString(1) + " " + q.getString(2));
-//            }
-//            q.close();
 
             Cursor q = cr2.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     //projection, music_where, params, MediaStore.Audio.Media.TITLE);
